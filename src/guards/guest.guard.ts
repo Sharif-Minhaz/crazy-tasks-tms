@@ -14,7 +14,7 @@ export class GuestGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
-    console.log(token);
+
     if (!token) {
       // =============== no token found, user is guest, allow access ================
       return true;

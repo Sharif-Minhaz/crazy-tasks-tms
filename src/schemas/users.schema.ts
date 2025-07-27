@@ -13,13 +13,13 @@ export class User {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, immutable: true, lowercase: true })
   email: string;
 
   @Prop({ required: true, minlength: 8, select: false })
   password: string;
 
-  @Prop({ default: UserRole.USER })
+  @Prop({ default: UserRole.USER, enum: UserRole })
   role: UserRole;
 
   @Prop({ default: Date.now })

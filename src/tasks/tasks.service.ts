@@ -1,44 +1,135 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Task } from '../schemas/tasks.schema';
-import { Model } from 'mongoose';
+import { Error, Model } from 'mongoose';
 import { Utils } from 'src/utils/Utils';
+import { User } from 'src/schemas/users.schema';
+import { JwtPayload } from 'src/auth/auth.service';
 
 @Injectable()
 export class TasksService {
   constructor(@InjectModel(Task.name) private taskModel: Model<Task>) {}
 
-  create(createTaskDto: CreateTaskDto) {
-    return this.taskModel.create(createTaskDto);
+  async create(createTaskDto: CreateTaskDto, user: JwtPayload) {
+    if (!user) {
+      throw new UnauthorizedException(
+        'Owner not found while creating the task',
+      );
+    }
+
+    try {
+      const createdTask = await this.taskModel.create({
+        ...createTaskDto,
+        owner: user.userId,
+      });
+      return {
+        data: createdTask,
+        message: 'Task created successfully',
+        success: true,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error.ValidationError) {
+        const validationErrors = Object.values(error.errors).map(
+          (err: Error) => err.message,
+        );
+        throw new BadRequestException({
+          success: false,
+          message: 'Validation failed',
+          errors: validationErrors,
+        });
+      }
+
+      throw error;
+    }
   }
 
-  findAll() {
-    return this.taskModel.find();
+  async findAll() {
+    const tasks = await this.taskModel
+      .find()
+      .populate<{ owner: User }>('owner')
+      .populate<{ assignee: User[] }>('assignee');
+    return {
+      data: tasks,
+      message: 'Tasks fetched successfully',
+      success: true,
+    };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!Utils.isObjectId(id)) {
       throw new BadRequestException('Invalid ObjectId passed as id');
     }
 
-    return this.taskModel.findById(id);
+    const task = await this.taskModel.findById(id);
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return {
+      data: task,
+      message: 'Task fetched successfully',
+      success: true,
+    };
   }
 
-  update(id: string, updateTaskDto: UpdateTaskDto) {
+  async update(id: string, updateTaskDto: UpdateTaskDto) {
     if (!Utils.isObjectId(id)) {
       throw new BadRequestException('Invalid ObjectId passed as id');
     }
 
-    return this.taskModel.findByIdAndUpdate(id, updateTaskDto);
+    try {
+      const updatedTask = await this.taskModel.findByIdAndUpdate(
+        id,
+        updateTaskDto,
+        { runValidators: true, new: true },
+      );
+
+      if (!updatedTask) {
+        throw new NotFoundException('Task not found');
+      }
+
+      return {
+        data: updatedTask,
+        message: 'Task updated successfully',
+        success: true,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error.ValidationError) {
+        const validationErrors = Object.values(error.errors).map(
+          (err: Error) => err.message,
+        );
+        throw new BadRequestException({
+          success: false,
+          message: 'Validation failed',
+          errors: validationErrors,
+        });
+      }
+    }
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     if (!Utils.isObjectId(id)) {
       throw new BadRequestException('Invalid ObjectId passed as id');
     }
 
-    return this.taskModel.findByIdAndDelete(id);
+    const deletedTask = await this.taskModel.findByIdAndDelete(id);
+
+    if (!deletedTask) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return {
+      data: deletedTask,
+      message: 'Task deleted successfully',
+      success: true,
+    };
   }
 }

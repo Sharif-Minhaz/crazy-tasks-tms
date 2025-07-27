@@ -1,6 +1,17 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UsePipes,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, updateUserSchema } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { ZodValidationPipe } from 'src/pipes/zodValidationPipe';
 
 @Controller('users')
 export class UsersController {
@@ -17,7 +28,12 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Body(new ZodValidationPipe(updateUserSchema))
+    updateUserDto: UpdateUserDto,
+    @Param('id') id: string,
+  ) {
     return this.usersService.update(id, updateUserDto);
   }
 

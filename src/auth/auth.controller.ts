@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService, JwtPayload } from './auth.service';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto, loginSchema } from './dto/login.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { GuestGuard } from '../guards/guest.guard';
 import { ZodValidationPipe } from 'src/pipes/zodValidationPipe';
@@ -25,8 +25,11 @@ export class AuthController {
   @UseGuards(GuestGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async signIn(@Body() signInDto: LoginDto, @Res() res: Response) {
-    return await this.authService.logIn(signInDto, res);
+  signIn(
+    @Body(new ZodValidationPipe(loginSchema)) signInDto: LoginDto,
+    @Res() res: Response,
+  ) {
+    return this.authService.logIn(signInDto, res);
   }
 
   @UseGuards(GuestGuard)

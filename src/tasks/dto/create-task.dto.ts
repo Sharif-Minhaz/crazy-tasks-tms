@@ -10,9 +10,6 @@ export const createTaskSchema = z
       TaskStatus,
       `Status must be one of the following: ${Object.values(TaskStatus).join(', ')}`,
     ),
-    owner: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
-      message: 'Invalid MongoDB ObjectID for owner',
-    }),
     assignee: z.array(
       z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
         message: 'Invalid MongoDB ObjectID for assignee',

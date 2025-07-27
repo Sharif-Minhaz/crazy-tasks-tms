@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/users.schema';
 import { MongoServerError } from 'mongodb';
 import { Model } from 'mongoose';
+import { Utils } from 'src/utils/Utils';
 
 @Injectable()
 export class UsersService {
@@ -36,6 +37,10 @@ export class UsersService {
   }
 
   findOne(id: string) {
+    if (!Utils.isObjectId(id)) {
+      throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
     return this.userModel.findById(id);
   }
 
@@ -59,10 +64,18 @@ export class UsersService {
   }
 
   update(id: string, updateUserDto: Partial<User>) {
+    if (!Utils.isObjectId(id)) {
+      throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
     return this.userModel.findByIdAndUpdate(id, updateUserDto);
   }
 
   remove(id: string) {
+    if (!Utils.isObjectId(id)) {
+      throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
     return this.userModel.findByIdAndDelete(id);
   }
 }

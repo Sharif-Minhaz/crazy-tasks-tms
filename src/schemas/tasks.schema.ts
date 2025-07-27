@@ -18,7 +18,11 @@ export class Task {
   @Prop()
   description: string;
 
-  @Prop({ default: TaskStatus.OPEN })
+  @Prop({
+    type: String,
+    default: TaskStatus.OPEN,
+    enum: TaskStatus,
+  })
   status: TaskStatus;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
