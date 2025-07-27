@@ -1,7 +1,6 @@
 import * as argon2 from 'argon2';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/users.schema';
 import { MongoServerError } from 'mongodb';
@@ -44,7 +43,22 @@ export class UsersService {
     return this.userModel.findOne({ email }).select('+password');
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async findOneByRefreshToken(refreshToken: string) {
+    const user = await this.userModel
+      .findOne({ refreshTokenHash: { $ne: null } })
+      .select('+refreshTokenHash');
+
+    if (user?.refreshTokenHash) {
+      const valid = await argon2.verify(user.refreshTokenHash, refreshToken);
+      if (valid) {
+        return user;
+      }
+    }
+
+    return null;
+  }
+
+  update(id: string, updateUserDto: Partial<User>) {
     return this.userModel.findByIdAndUpdate(id, updateUserDto);
   }
 

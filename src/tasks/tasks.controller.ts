@@ -7,11 +7,14 @@ import {
   Param,
   Delete,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, createTaskSchema } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ZodValidationPipe } from '../pipes/zodValidationPipe';
+import { AdminGuard } from 'src/guards/admin.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('tasks')
 export class TasksController {
@@ -34,11 +37,13 @@ export class TasksController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
     return this.tasksService.update(id, updateTaskDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   remove(@Param('id') id: string) {
     return this.tasksService.remove(id);
   }
