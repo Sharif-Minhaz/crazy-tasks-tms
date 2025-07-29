@@ -12,10 +12,10 @@ export type TaskDocument = HydratedDocument<Task>;
 
 @Schema()
 export class Task {
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   title: string;
 
-  @Prop()
+  @Prop({ index: true })
   description: string;
 
   @Prop({
@@ -41,4 +41,7 @@ export class Task {
   updatedAt: Date;
 }
 
-export const TaskSchema = SchemaFactory.createForClass(Task);
+const TaskSchema = SchemaFactory.createForClass(Task);
+TaskSchema.index({ title: 'text', description: 'text' });
+
+export { TaskSchema };

@@ -62,6 +62,35 @@ export class TasksService {
     };
   }
 
+  async findAllUserTasks(user: JwtPayload) {
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const tasks = await this.taskModel
+      .find({ assignee: { $in: [user.userId] } })
+      .populate<{ owner: User }>('owner')
+      .populate<{ assignee: User[] }>('assignee');
+
+    return {
+      data: tasks,
+      message: 'Tasks fetched successfully',
+      success: true,
+    };
+  }
+
+  async searchTasks(term: string) {
+    const tasks = await this.taskModel
+      .find({ $text: { $search: term } })
+      .populate<{ owner: User }>('owner')
+      .populate<{ assignee: User[] }>('assignee');
+    return {
+      data: tasks,
+      message: 'Tasks fetched successfully',
+      success: true,
+    };
+  }
+
   async findOne(id: string) {
     if (!Utils.isObjectId(id)) {
       throw new BadRequestException('Invalid ObjectId passed as id');

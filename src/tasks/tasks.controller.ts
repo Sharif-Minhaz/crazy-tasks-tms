@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, createTaskSchema } from './dto/create-task.dto';
@@ -34,6 +35,18 @@ export class TasksController {
   @UseGuards(JwtAuthGuard)
   findAll() {
     return this.tasksService.findAll();
+  }
+
+  @Get('user')
+  @UseGuards(JwtAuthGuard)
+  findAllUserTasks(@Req() req: { user: JwtPayload }) {
+    return this.tasksService.findAllUserTasks(req.user);
+  }
+
+  @Get('search')
+  @UseGuards(JwtAuthGuard)
+  searchTasks(@Query('term') term: string) {
+    return this.tasksService.searchTasks(term);
   }
 
   @Get(':id')
