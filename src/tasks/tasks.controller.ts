@@ -49,6 +49,24 @@ export class TasksController {
     return this.tasksService.searchTasks(term);
   }
 
+  @Patch('assign')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async assignTask(
+    @Query('taskId') taskId: string,
+    @Query('userId') userId: string,
+  ) {
+    return await this.tasksService.assignTask(taskId, userId);
+  }
+
+  @Patch('remove-assignee')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async removeAssignee(
+    @Query('taskId') taskId: string,
+    @Query('userId') userId: string,
+  ) {
+    return await this.tasksService.removeAssignee(taskId, userId);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
@@ -57,11 +75,11 @@ export class TasksController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, AdminGuard)
-  update(
+  async update(
     @Body(new ZodValidationPipe(updateTaskSchema)) updateTaskDto: UpdateTaskDto,
     @Param('id') id: string,
   ) {
-    return this.tasksService.update(id, updateTaskDto);
+    return await this.tasksService.update(id, updateTaskDto);
   }
 
   @Delete(':id')

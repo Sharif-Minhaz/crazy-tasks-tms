@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -15,7 +16,10 @@ import { JwtPayload } from 'src/auth/auth.service';
 
 @Injectable()
 export class TasksService {
-  constructor(@InjectModel(Task.name) private taskModel: Model<Task>) {}
+  constructor(
+    @InjectModel(Task.name) private taskModel: Model<Task>,
+    @InjectModel(User.name) private userModel: Model<User>,
+  ) {}
 
   async create(createTaskDto: CreateTaskDto, user: JwtPayload) {
     if (!user) {
@@ -131,6 +135,13 @@ export class TasksService {
         success: true,
       };
     } catch (error: unknown) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+
       if (error instanceof Error.ValidationError) {
         const validationErrors = Object.values(error.errors).map(
           (err: Error) => err.message,
@@ -141,7 +152,64 @@ export class TasksService {
           errors: validationErrors,
         });
       }
+
+      console.error('Unexpected error in update task:', error);
+      throw new InternalServerErrorException('An unexpected error occurred');
     }
+  }
+
+  async assignTask(id: string, userId: string) {
+    if (!Utils.isObjectId(id)) {
+      throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const task = await this.taskModel.findByIdAndUpdate(
+      id,
+      {
+        $addToSet: {
+          assignee: userId,
+        },
+      },
+      { new: true },
+    );
+
+    return {
+      data: task,
+      message: 'Task assigned successfully',
+      success: true,
+    };
+  }
+
+  async removeAssignee(id: string, userId: string) {
+    if (!Utils.isObjectId(id)) {
+      throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
+    const task = await this.taskModel.findByIdAndUpdate(
+      id,
+      {
+        $pull: {
+          assignee: userId,
+        },
+      },
+      { new: true },
+    );
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return {
+      data: task,
+      message: 'Assignee removed successfully',
+      success: true,
+    };
   }
 
   async remove(id: string) {
