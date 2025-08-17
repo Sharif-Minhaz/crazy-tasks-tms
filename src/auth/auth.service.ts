@@ -6,6 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 export interface JwtPayload {
   userId: string;
@@ -18,6 +19,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async logIn(loginDto: LoginDto, res?: Response): Promise<any> {
@@ -41,10 +43,10 @@ export class AuthService {
     if (res) {
       res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: this.configService.get('NODE_ENV') === 'production',
         sameSite: 'strict',
         path: '/auth/refresh-token',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
     }
     return res?.json({ access_token: accessToken });

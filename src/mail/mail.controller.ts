@@ -9,23 +9,20 @@ import {
 import { MailService } from './mail.service';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { sendMailSchema } from './dto/send-mail.dto';
+import { sendMailBodySchema } from './dto/send-mail.dto';
 import { ZodValidationPipe } from 'src/pipes/zodValidationPipe';
-
-export type MailBody = {
-  email: string;
-  subject: string;
-  html: string;
-};
+import { SendMailBody } from './dto/send-mail.dto';
 
 @Controller('mail')
 export class MailController {
   constructor(private readonly mailService: MailService) {}
 
   @HttpCode(HttpStatus.OK)
-  @Post()
+  @Post('task-reminder')
   @UseGuards(JwtAuthGuard, AdminGuard)
-  sendMail(@Body(new ZodValidationPipe(sendMailSchema)) body: MailBody) {
-    return this.mailService.sendMail(body);
+  sendTaskReminderMail(
+    @Body(new ZodValidationPipe(sendMailBodySchema)) body: SendMailBody,
+  ) {
+    return this.mailService.sendTaskReminderMail(body);
   }
 }

@@ -15,9 +15,14 @@ import { AuthModule } from './auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { MailModule } from './mail/mail.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -27,9 +32,10 @@ import { MailModule } from './mail/mail.module';
       ],
     }),
     MongooseModule.forRootAsync({
-      useFactory: () => ({
-        uri: process.env.MONGODB_URI,
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('MONGODB_URI'),
       }),
+      inject: [ConfigService],
     }),
     TasksModule,
     UsersModule,

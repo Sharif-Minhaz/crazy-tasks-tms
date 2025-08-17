@@ -1,11 +1,10 @@
 import { z } from 'zod';
 
-export const sendMailSchema = z
+export const sendMailBodySchema = z
   .object({
-    email: z.email('Invalid email address'),
-    subject: z.string().min(1, 'Subject must be string'),
-    html: z.string().min(1, 'HTML must be string'),
+    taskId: z.string().min(1, 'Task ID must be string'),
+    userId: z.string().min(1, 'User ID must be string'),
   })
   .required();
 
-export type SendMailDto = z.infer<typeof sendMailSchema>;
+export type SendMailBody = z.infer<typeof sendMailBodySchema>;

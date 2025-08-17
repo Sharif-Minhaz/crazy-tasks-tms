@@ -163,6 +163,10 @@ export class TasksService {
       throw new BadRequestException('Invalid ObjectId passed as id');
     }
 
+    if (!Utils.isObjectId(userId)) {
+      throw new BadRequestException('Invalid ObjectId passed as userId');
+    }
+
     const user = await this.userModel.findById(userId);
 
     if (!user) {
@@ -189,6 +193,10 @@ export class TasksService {
   async removeAssignee(id: string, userId: string) {
     if (!Utils.isObjectId(id)) {
       throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
+    if (!Utils.isObjectId(userId)) {
+      throw new BadRequestException('Invalid ObjectId passed as userId');
     }
 
     const task = await this.taskModel.findByIdAndUpdate(

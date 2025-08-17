@@ -8,6 +8,12 @@ export enum TaskStatus {
   COMPLETED = 'completed',
 }
 
+export enum TaskPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
 export type TaskDocument = HydratedDocument<Task>;
 
 @Schema()
@@ -33,6 +39,15 @@ export class Task {
     ref: 'User',
   })
   assignee: User[];
+
+  @Prop({ default: Date.now })
+  startDate: Date;
+
+  @Prop({ default: Date.now })
+  dueDate: Date;
+
+  @Prop({ default: TaskPriority.LOW, enum: TaskPriority })
+  priority: TaskPriority;
 
   @Prop({ default: Date.now })
   createdAt: Date;
