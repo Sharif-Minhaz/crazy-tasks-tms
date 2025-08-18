@@ -12,4 +12,16 @@ export class Utils {
   static isObjectId(id: string): boolean {
     return Types.ObjectId.isValid(id);
   }
+
+  static formatDate(date: Date): string {
+    if (!date) return '';
+
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    return formatter.format(date);
+  }
 }

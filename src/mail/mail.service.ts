@@ -8,6 +8,7 @@ import { User } from 'src/schemas/users.schema';
 import { Task } from 'src/schemas/tasks.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Utils } from 'src/utils/Utils';
 
 @Injectable()
 export class MailService {
@@ -44,7 +45,7 @@ export class MailService {
           taskId: task._id.toString(),
           taskName: task.title,
           taskDescription: task.description,
-          dueDate: task.dueDate.toISOString(),
+          dueDate: Utils.formatDate(task.dueDate),
           priority: task.priority,
           taskUrl: `https://crazy-task-manager.vercel.app/tasks/${task._id.toString()}`,
         },
