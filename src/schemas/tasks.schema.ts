@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { User } from './users.schema';
+import { Project } from './projects.schema';
 
 export enum TaskStatus {
   OPEN = 'open',
@@ -18,6 +19,13 @@ export type TaskDocument = HydratedDocument<Task>;
 
 @Schema()
 export class Task {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project',
+    required: true,
+  })
+  project: Project;
+
   @Prop({ required: true, index: true })
   title: string;
 

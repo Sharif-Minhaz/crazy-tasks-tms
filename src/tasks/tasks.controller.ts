@@ -43,6 +43,12 @@ export class TasksController {
     return this.tasksService.findAllUserTasks(req.user);
   }
 
+  @Get('project/:id')
+  @UseGuards(JwtAuthGuard)
+  findAllProjectTasks(@Param('id') id: string) {
+    return this.tasksService.findAllProjectTasks(id);
+  }
+
   @Get('search')
   @UseGuards(JwtAuthGuard)
   searchTasks(@Query('term') term: string) {

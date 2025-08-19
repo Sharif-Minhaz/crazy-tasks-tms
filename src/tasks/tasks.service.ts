@@ -83,6 +83,23 @@ export class TasksService {
     };
   }
 
+  async findAllProjectTasks(id: string) {
+    if (!Utils.isObjectId(id)) {
+      throw new BadRequestException('Invalid ObjectId passed as id');
+    }
+
+    const tasks = await this.taskModel
+      .find({ project: id })
+      .populate<{ owner: User }>('owner')
+      .populate<{ assignee: User[] }>('assignee');
+
+    return {
+      data: tasks,
+      message: 'Tasks fetched successfully',
+      success: true,
+    };
+  }
+
   async searchTasks(term: string) {
     const tasks = await this.taskModel
       .find({ $text: { $search: term } })
@@ -234,6 +251,20 @@ export class TasksService {
     return {
       data: deletedTask,
       message: 'Task deleted successfully',
+      success: true,
+    };
+  }
+
+  async removeProjectTasks(projectId: string) {
+    if (!Utils.isObjectId(projectId)) {
+      throw new BadRequestException('Invalid ObjectId passed as projectId');
+    }
+
+    const tasks = await this.taskModel.deleteMany({ project: projectId });
+
+    return {
+      data: tasks,
+      message: 'Tasks deleted successfully',
       success: true,
     };
   }

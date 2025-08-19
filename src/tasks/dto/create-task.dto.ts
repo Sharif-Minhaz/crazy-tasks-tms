@@ -15,6 +15,9 @@ export const createTaskSchema = z
         message: 'Invalid MongoDB ObjectID for assignee',
       }),
     ),
+    project: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+      message: 'Invalid MongoDB ObjectID for project',
+    }),
   })
   .required();
 
